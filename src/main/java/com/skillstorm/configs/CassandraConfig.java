@@ -17,7 +17,7 @@ import org.springframework.data.cassandra.core.mapping.SimpleUserTypeResolver;
 import org.springframework.data.cassandra.repository.config.EnableReactiveCassandraRepositories;
 
 @Configuration
-@EnableReactiveCassandraRepositories(basePackages = {"com.skillstorm.repositores"})
+@EnableReactiveCassandraRepositories(basePackages = {"com.skillstorm.repositories"})
 public class CassandraConfig {
 
     @Bean
