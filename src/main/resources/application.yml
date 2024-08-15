@@ -38,3 +38,7 @@ logging:
       netty: ERROR
     reactor:
       netty: ERROR
+
+# Configure Rabbit exchanges, queues, and routing keys:
+exchanges:
+  direct: direct-exchange
