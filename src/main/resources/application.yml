@@ -19,7 +19,7 @@ eureka:
 # Assign a key to register with Discovery Service:
 spring:
   application:
-    name: inbox-service
+    name: message-service
 
 
   # Configure terminal output:

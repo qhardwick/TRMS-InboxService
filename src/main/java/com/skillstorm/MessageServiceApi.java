@@ -4,8 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class InboxServiceApi {
+public class MessageServiceApi {
     public static void main(String[] args) {
-        SpringApplication.run(InboxServiceApi.class, args);
+        SpringApplication.run(MessageServiceApi.class, args);
     }
 }

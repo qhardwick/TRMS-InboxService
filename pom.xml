@@ -12,8 +12,8 @@
     <groupId>com.skillstorm</groupId>
     <artifactId>InboxService</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>UserService</name>
-    <description>Handles Inbox functionality for the Tuition Reimbursement Management System</description>
+    <name>MessageService</name>
+    <description>Handles Message functionality for the Tuition Reimbursement Management System</description>
 
     <properties>
         <java.version>17</java.version>

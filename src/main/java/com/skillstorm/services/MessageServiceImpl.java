@@ -13,12 +13,12 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 @Service
-public class InboxServiceImpl implements InboxService {
+public class MessageServiceImpl implements MessageService {
 
     private final InboxRepository inboxRepository;
 
     @Autowired
-    public InboxServiceImpl(InboxRepository inboxRepository) {
+    public MessageServiceImpl(InboxRepository inboxRepository) {
         this.inboxRepository = inboxRepository;
     }
 
@@ -28,6 +28,13 @@ public class InboxServiceImpl implements InboxService {
         System.out.println("\n\nReceived message: " + inbox.toString());
         return inboxRepository.save(inbox.mapToEntity())
                 .then();
+    }
+
+    // Return all entries in db. Just for testing:
+    @Override
+    public Flux<InboxDto> findAll() {
+        return inboxRepository.findAll()
+                .map(InboxDto::new);
     }
 
     // Get all Forms awaiting a User's approval:

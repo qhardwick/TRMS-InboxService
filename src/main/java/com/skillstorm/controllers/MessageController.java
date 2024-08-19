@@ -1,6 +1,7 @@
 package com.skillstorm.controllers;
 
-import com.skillstorm.services.InboxService;
+import com.skillstorm.dtos.InboxDto;
+import com.skillstorm.services.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -12,25 +13,31 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/inboxes")
-public class InboxController {
+@RequestMapping("/messages")
+public class MessageController {
 
-    private final InboxService inboxService;
+    private final MessageService messageService;
 
     @Autowired
-    public InboxController(InboxService inboxService) {
-        this.inboxService = inboxService;
+    public MessageController(MessageService messageService) {
+        this.messageService = messageService;
     }
 
     // Test endpoint:
     @GetMapping("/hello")
     public Mono<String> hello() {
-        return Mono.just("Hello Inbox Service");
+        return Mono.just("Hello Message Service");
+    }
+
+    // Testing utility:
+    @GetMapping
+    public Flux<InboxDto> findAllMessages() {
+        return messageService.findAll();
     }
 
     // View Forms awaiting the User's approval:
     @GetMapping("/pending-my-approval")
     public Flux<UUID> getAllAwaitingApprovalByUsername(@RequestHeader("username") String username) {
-        return inboxService.getAllAwaitingApprovalByUsername(username);
+        return messageService.getAllAwaitingApprovalByUsername(username);
     }
 }
