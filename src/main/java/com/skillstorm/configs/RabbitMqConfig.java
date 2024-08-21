@@ -51,21 +51,36 @@ public class RabbitMqConfig {
 
     // Create the queues:
 
-    // Inbox queues:
+    // ApprovalRequest queues:
     @Bean
-    public Queue inboxQueue() {
-        return new Queue(Queues.INBOX.toString());
+    public Queue approvalRequestQueue() {
+        return new Queue(Queues.APPROVAL_REQUEST.toString());
+    }
+
+    // AutomaticApproval queues:
+    @Bean
+    public Queue automaticApprovalQueue() {
+        return new Queue(Queues.AUTO_APPROVAL.toString());
     }
 
 
     // Bind the queues to the exchange:
 
-    // Inbox bindings:
+    // ApprovalRequest bindings:
     @Bean
-    public Binding inboxBindibg(Queue inboxQueue, Exchange directExchange) {
-        return BindingBuilder.bind(inboxQueue)
+    public Binding approvalRequestBinding(Queue approvalRequestQueue, Exchange directExchange) {
+        return BindingBuilder.bind(approvalRequestQueue)
                 .to(directExchange)
-                .with(Queues.INBOX)
+                .with(Queues.APPROVAL_REQUEST)
+                .noargs();
+    }
+
+    // AutomaticApproval bindings:
+    @Bean
+    public Binding automaticApprovalBinding(Queue automaticApprovalQueue, Exchange directExchange) {
+        return BindingBuilder.bind(automaticApprovalQueue)
+                .to(directExchange)
+                .with(Queues.AUTO_APPROVAL)
                 .noargs();
     }
 }

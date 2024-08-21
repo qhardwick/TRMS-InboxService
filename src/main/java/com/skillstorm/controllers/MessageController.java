@@ -1,6 +1,6 @@
 package com.skillstorm.controllers;
 
-import com.skillstorm.dtos.InboxDto;
+import com.skillstorm.dtos.ApprovalRequestDto;
 import com.skillstorm.services.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +31,7 @@ public class MessageController {
 
     // Testing utility:
     @GetMapping
-    public Flux<InboxDto> findAllMessages() {
+    public Flux<ApprovalRequestDto> findAllMessages() {
         return messageService.findAll();
     }
 
