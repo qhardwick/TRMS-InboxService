@@ -12,9 +12,10 @@ import java.time.LocalDateTime;
 public interface ApprovalRequestRepository extends ReactiveCassandraRepository<ApprovalRequest, String> {
 
     // Find all entries for a given username:
-    @Query("SELECT * FROM inbox WHERE username = ?0")
+    @Query("SELECT * FROM approval_request WHERE username = ?0")
     Flux<ApprovalRequest> findAllById(String username);
 
     // Find all ApprovalRequests whose deadlines have passed:
+    @Query("SELECT * FROM approval_request WHERE approval_deadline < ?0")
     Flux<ApprovalRequest> findAllRequestsWithExpiredDeadlines(LocalDateTime deadline);
 }

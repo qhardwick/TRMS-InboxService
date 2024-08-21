@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-@Table("inbox")
+@Table("approval_request")
 public class ApprovalRequest {
 
     @PrimaryKeyColumn(name = "username", ordinal = 0, type = PrimaryKeyType.PARTITIONED)

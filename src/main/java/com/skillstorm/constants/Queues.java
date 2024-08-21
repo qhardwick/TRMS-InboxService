@@ -4,6 +4,7 @@ public enum Queues {
 
     // From Form-Service:
     APPROVAL_REQUEST("approval-request-queue"),
+    DELETION_REQUEST("deletion-request-queue"),
 
     // To Form-Service:
     AUTO_APPROVAL("automatic-approval-queue");

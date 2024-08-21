@@ -51,13 +51,17 @@ public class RabbitMqConfig {
 
     // Create the queues:
 
-    // ApprovalRequest queues:
+    // From Form-Service:
     @Bean
     public Queue approvalRequestQueue() {
         return new Queue(Queues.APPROVAL_REQUEST.toString());
     }
 
-    // AutomaticApproval queues:
+    @Bean
+    public Queue deletionRequestQueue() { return new Queue(Queues.DELETION_REQUEST.toString()); }
+
+
+    // To Form-Service:
     @Bean
     public Queue automaticApprovalQueue() {
         return new Queue(Queues.AUTO_APPROVAL.toString());
@@ -66,7 +70,7 @@ public class RabbitMqConfig {
 
     // Bind the queues to the exchange:
 
-    // ApprovalRequest bindings:
+    // Approval Request binding:
     @Bean
     public Binding approvalRequestBinding(Queue approvalRequestQueue, Exchange directExchange) {
         return BindingBuilder.bind(approvalRequestQueue)
@@ -75,7 +79,16 @@ public class RabbitMqConfig {
                 .noargs();
     }
 
-    // AutomaticApproval bindings:
+    // Deletion Request binding:
+    @Bean
+    public Binding deletionRequestBinding(Queue deletionRequestQueue, Exchange directExchange) {
+        return BindingBuilder.bind(deletionRequestQueue)
+                .to(directExchange)
+                .with(Queues.DELETION_REQUEST)
+                .noargs();
+    }
+
+    // AutomaticApproval binding:
     @Bean
     public Binding automaticApprovalBinding(Queue automaticApprovalQueue, Exchange directExchange) {
         return BindingBuilder.bind(automaticApprovalQueue)

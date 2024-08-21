@@ -40,23 +40,21 @@ public class MessageServiceImpl implements MessageService {
                 approvalRequest.getTimeCreated().plusSeconds(20)
         );
         return approvalRequestRepository.save(approvalRequest.mapToEntity())
-                .subscribeOn(Schedulers.boundedElastic())
                 .then();
     }
 
     // Set up a scheduled task to run periodically to check for stale approval requests. We're just testing here, so we want the
     // task to run frequently to ensure that everything works as expected. We're running it every 30 seconds:
-    private void startScheduler() {
-        Flux.interval(Duration.ofSeconds(30))
+    private Flux<Void> startScheduler() {
+        return Flux.interval(Duration.ofSeconds(30))
                 .onBackpressureDrop()
-                .map(tick -> checkForApprovalDeadlines())
-                .subscribeOn(Schedulers.boundedElastic())
-                .subscribe();
+                .flatMap(tick -> checkForApprovalDeadlines());
     }
 
-    public Mono<Void> checkForApprovalDeadlines() {
-        approvalRequestRepository.findAll().filter(approvalRequest -> LocalDateTime.now().isAfter(approvalRequest.getApprovalDeadline()))
-                .map(this::submitForAutoApproval);
+    // Query the repository for all ApprovalRequests past their deadlines:
+    public Flux<Void> checkForApprovalDeadlines() {
+        return approvalRequestRepository.findAllRequestsWithExpiredDeadlines(LocalDateTime.now())
+                .flatMap(this::submitForAutoApproval);
     }
 
     // Submit to Form-Service for auto-approval:
@@ -65,14 +63,15 @@ public class MessageServiceImpl implements MessageService {
                 .then();
     }
 
-    // Delete Message from User's inbox:
+    // Delete ApprovalRequest from User's inbox:
     @RabbitListener(queues = "deletion-request-queue")
-    public Mono<Void> deleteMessageFromInbox(@Payload ApprovalRequestDto message) {
-        return approvalRequestRepository.delete(message.mapToEntity())
+    public Mono<Void> deleteMessageFromInbox(@Payload ApprovalRequestDto approvalRequest) {
+        return approvalRequestRepository.delete(approvalRequest.mapToEntity())
                 .then();
     }
 
-    // Return all entries in db. Just for testing:
+    // Return all db entries. Just for testing
+    // TODO: Delete when no longer needed
     @Override
     public Flux<ApprovalRequestDto> findAll() {
         return approvalRequestRepository.findAll()
