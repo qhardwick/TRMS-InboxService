@@ -3,10 +3,7 @@ package com.skillstorm.controllers;
 import com.skillstorm.dtos.ApprovalRequestDto;
 import com.skillstorm.services.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -39,5 +36,11 @@ public class MessageController {
     @GetMapping("/pending-my-approval")
     public Flux<UUID> getAllAwaitingApprovalByUsername(@RequestHeader("username") String username) {
         return messageService.getAllAwaitingApprovalByUsername(username);
+    }
+
+    // Delete a message from inbox:
+    @DeleteMapping
+    public Mono<Void> deleteByUsernameAndFormId(@RequestBody ApprovalRequestDto approvalRequestDto) {
+        return messageService.deleteByUsernameAndFormId(approvalRequestDto);
     }
 }

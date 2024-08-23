@@ -8,11 +8,9 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -29,7 +27,7 @@ public class MessageServiceImpl implements MessageService {
         this.approvalRequestRepository = approvalRequestRepository;
         this.rabbitTemplate = rabbitTemplate;
 
-        startScheduler();
+        startScheduler().subscribe();
     }
 
     // Post ApprovalRequest to User's inbox:
@@ -59,6 +57,7 @@ public class MessageServiceImpl implements MessageService {
 
     // Submit to Form-Service for auto-approval:
     private Mono<Void> submitForAutoApproval(ApprovalRequest approvalRequest) {
+        System.out.println("\n\nRunning auto-approval for: " + approvalRequest);
         return Mono.fromRunnable(() -> rabbitTemplate.convertAndSend(Queues.AUTO_APPROVAL.toString(), new ApprovalRequestDto(approvalRequest)))
                 .then();
     }
@@ -66,8 +65,16 @@ public class MessageServiceImpl implements MessageService {
     // Delete ApprovalRequest from User's inbox:
     @RabbitListener(queues = "deletion-request-queue")
     public Mono<Void> deleteMessageFromInbox(@Payload ApprovalRequestDto approvalRequest) {
-        return approvalRequestRepository.delete(approvalRequest.mapToEntity())
-                .then();
+        System.out.println("Deleting message: " + approvalRequest);
+        return approvalRequestRepository
+                .deleteByUsernameAndFormId(approvalRequest.getUsername(), approvalRequest.getFormId());
+    }
+
+    // Delete by username and FormId (controller method):
+    @Override
+    public Mono<Void> deleteByUsernameAndFormId(ApprovalRequestDto approvalRequest) {
+        return approvalRequestRepository
+                .deleteByUsernameAndFormId(approvalRequest.getUsername(), approvalRequest.getFormId());
     }
 
     // Return all db entries. Just for testing
@@ -81,7 +88,8 @@ public class MessageServiceImpl implements MessageService {
     // Get all Forms awaiting a User's approval:
     @Override
     public Flux<UUID> getAllAwaitingApprovalByUsername(String username) {
-        return approvalRequestRepository.findAllById(username)
-                .map(ApprovalRequest::getFormId);
+        return approvalRequestRepository.findAllByUsername(username)
+                .map(ApprovalRequestDto::new)
+                .map(ApprovalRequestDto::getFormId);
     }
 }
