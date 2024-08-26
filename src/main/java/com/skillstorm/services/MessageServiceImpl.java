@@ -57,7 +57,6 @@ public class MessageServiceImpl implements MessageService {
 
     // Submit to Form-Service for auto-approval:
     private Mono<Void> submitForAutoApproval(ApprovalRequest approvalRequest) {
-        System.out.println("\n\nRunning auto-approval for: " + approvalRequest);
         return Mono.fromRunnable(() -> rabbitTemplate.convertAndSend(Queues.AUTO_APPROVAL.toString(), new ApprovalRequestDto(approvalRequest)))
                 .then();
     }
@@ -65,7 +64,6 @@ public class MessageServiceImpl implements MessageService {
     // Delete ApprovalRequest from User's inbox:
     @RabbitListener(queues = "deletion-request-queue")
     public Mono<Void> deleteMessageFromInbox(@Payload ApprovalRequestDto approvalRequest) {
-        System.out.println("Deleting message: " + approvalRequest);
         return approvalRequestRepository
                 .deleteByUsernameAndFormId(approvalRequest.getUsername(), approvalRequest.getFormId());
     }
