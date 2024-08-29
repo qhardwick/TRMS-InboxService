@@ -60,6 +60,8 @@ public class RabbitMqConfig {
     @Bean
     public Queue deletionRequestQueue() { return new Queue(Queues.DELETION_REQUEST.toString()); }
 
+    @Bean Queue completionVerificationQueue() { return new Queue(Queues.COMPLETION_VERIFICATION.toString()); }
+
 
     // To Form-Service:
     @Bean
@@ -85,6 +87,15 @@ public class RabbitMqConfig {
         return BindingBuilder.bind(deletionRequestQueue)
                 .to(directExchange)
                 .with(Queues.DELETION_REQUEST)
+                .noargs();
+    }
+
+    // Completion Verification binding:
+    @Bean
+    public Binding completionVerificationBinding(Queue completionVerificationQueue, Exchange directExchange) {
+        return BindingBuilder.bind(completionVerificationQueue)
+                .to(directExchange)
+                .with(Queues.COMPLETION_VERIFICATION)
                 .noargs();
     }
 

@@ -2,8 +2,10 @@ package com.skillstorm.services;
 
 import com.skillstorm.constants.Queues;
 import com.skillstorm.dtos.ApprovalRequestDto;
+import com.skillstorm.dtos.VerificationRequestDto;
 import com.skillstorm.entities.ApprovalRequest;
 import com.skillstorm.repositories.ApprovalRequestRepository;
+import com.skillstorm.repositories.VerificationRequestRepository;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +22,13 @@ import java.util.UUID;
 public class MessageServiceImpl implements MessageService {
 
     private final ApprovalRequestRepository approvalRequestRepository;
+    private final VerificationRequestRepository verificationRequestRepository;
     private final RabbitTemplate rabbitTemplate;
 
     @Autowired
-    public MessageServiceImpl(ApprovalRequestRepository approvalRequestRepository, RabbitTemplate rabbitTemplate) {
+    public MessageServiceImpl(ApprovalRequestRepository approvalRequestRepository, VerificationRequestRepository verificationRequestRepository, RabbitTemplate rabbitTemplate) {
         this.approvalRequestRepository = approvalRequestRepository;
+        this.verificationRequestRepository = verificationRequestRepository;
         this.rabbitTemplate = rabbitTemplate;
 
         startScheduler().subscribe();
@@ -73,6 +77,13 @@ public class MessageServiceImpl implements MessageService {
     public Mono<Void> deleteByUsernameAndFormId(ApprovalRequestDto approvalRequest) {
         return approvalRequestRepository
                 .deleteByUsernameAndFormId(approvalRequest.getUsername(), approvalRequest.getFormId());
+    }
+
+    // Add Completion Verification request to approver's inbox:
+    @RabbitListener(queues = "completion-verification-queue")
+    public Mono<Void> addCompletionVerificationRequest(@Payload VerificationRequestDto verificationRequest) {
+        return verificationRequestRepository.save(verificationRequest.mapToEntity())
+                .then();
     }
 
     // Return all db entries. Just for testing
