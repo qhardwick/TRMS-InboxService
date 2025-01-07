@@ -40,7 +40,7 @@ public class MessageController {
 
     // Delete a message from inbox:
     @DeleteMapping
-    public Mono<Void> deleteByUsernameAndFormId(@RequestBody ApprovalRequestDto approvalRequestDto) {
-        return messageService.deleteByUsernameAndFormId(approvalRequestDto);
+    public Mono<Void> deleteByUsernameAndFormId(@RequestBody Mono<ApprovalRequestDto> approvalRequestDto) {
+        return approvalRequestDto.flatMap(messageService::deleteByUsernameAndFormId);
     }
 }

@@ -1,9 +1,15 @@
 package com.skillstorm.configs;
 
 import com.skillstorm.constants.Queues;
+import com.skillstorm.services.MessageService;
+import com.skillstorm.services.MessageServiceImpl;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.listener.MessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +47,29 @@ public class RabbitMqConfig {
         rabbitTemplate.setMessageConverter(messageConverter());
         rabbitTemplate.setReplyTimeout(6000);
         return rabbitTemplate;
+    }
+
+    // Configure the MessageListenerAdapter to inject into the container and tell it which methods to monitor:
+    @Bean
+    public  MessageListenerAdapter messageListenerAdapter(MessageServiceImpl messageService, MessageConverter messageConverter) {
+        MessageListenerAdapter adapter = new MessageListenerAdapter(messageService);
+        adapter.setMessageConverter(messageConverter);
+        adapter.setDefaultListenerMethod("postApprovalRequestToInboxByUsername");
+
+        return adapter;
+    }
+
+    // Configure the listener container and set AcknowledgeMode to manual to prevent premature acknowledgements
+    // when consuming Spring Webflux classes:
+    @Bean
+    public MessageListenerContainer messageListenerContainer(ConnectionFactory connectionFactory, MessageListenerAdapter messageListenerAdapter) {
+        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.setMessageListener(messageListenerAdapter);
+        container.setQueues(approvalRequestQueue(), deletionRequestQueue(), completionVerificationQueue());
+        container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
+
+        return container;
     }
 
     // Create the exchange:

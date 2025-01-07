@@ -1,7 +1,5 @@
     package com.skillstorm.dtos;
 
-    import com.datastax.oss.driver.api.core.type.DataTypes;
-    import com.datastax.oss.driver.api.core.type.TupleType;
     import com.fasterxml.jackson.annotation.JsonIgnore;
     import com.skillstorm.entities.ApprovalRequest;
     import lombok.Data;
@@ -14,18 +12,18 @@
     @NoArgsConstructor
     public class ApprovalRequestDto {
 
-        private static final TupleType tupleType = DataTypes.tupleOf(DataTypes.TEXT, DataTypes.UUID);
-
         private String username;
         private UUID formId;
         private LocalDateTime timeCreated;
         private LocalDateTime approvalDeadline;
+        private boolean viewed;
 
         public ApprovalRequestDto(ApprovalRequest approvalRequest) {
             this.username = approvalRequest.getUsername();
             this.formId = approvalRequest.getFormId();
             this.timeCreated = approvalRequest.getTimeCreated();
             this.approvalDeadline = approvalRequest.getApprovalDeadline();
+            this.viewed = approvalRequest.isViewed();
         }
 
         @JsonIgnore
@@ -35,6 +33,7 @@
             approvalRequest.setFormId(formId);
             approvalRequest.setTimeCreated(timeCreated);
             approvalRequest.setApprovalDeadline(approvalDeadline);
+            approvalRequest.setViewed(viewed);
 
             return approvalRequest;
         }

@@ -26,4 +26,6 @@ public class ApprovalRequest {
 
     @Column("approval_deadline")
     private LocalDateTime approvalDeadline;
+
+    private boolean viewed;
 }
