@@ -10,9 +10,7 @@ import com.skillstorm.repositories.VerificationRequestRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -21,7 +19,6 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 public class MessageServiceImpl implements MessageService {
@@ -39,18 +36,15 @@ public class MessageServiceImpl implements MessageService {
 
     // Post ApprovalRequest to User's inbox:
     @RabbitListener(queues = "approval-request-queue")
-    public Mono<Void> postApprovalRequestToInboxByUsername(@Payload ApprovalRequestDto approvalRequest, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) {
-        approvalRequest.setTimeCreated(LocalDateTime.now());
+    public Mono<Void> postApprovalRequestToInboxByUsername(@Payload ApprovalRequestDto approvalRequest) {
 
-        // Set the approval deadline (20 seconds from now)
+        // Set the approval deadline (20 seconds from now). May remove the timeCreated field in the future since we're only
+        // really using it to create the deadline, but it may be something people would want tracked:
+        approvalRequest.setTimeCreated(LocalDateTime.now());
         approvalRequest.setApprovalDeadline(approvalRequest.getTimeCreated().plusSeconds(20));
 
         return approvalRequestRepository.save(approvalRequest.mapToEntity())
-                .flatMap(ignored -> handleAcknowledgement(channel, deliveryTag)) // Successfully acknowledge
-                .onErrorResume(error -> {
-                    // If there's an error, handle it by negatively acknowledging the message
-                    return handleNegativeAcknowledgement(error, channel, deliveryTag);
-                });
+                .then();
     }
 
 
@@ -107,10 +101,9 @@ public class MessageServiceImpl implements MessageService {
 
     // Get all Forms awaiting a User's approval:
     @Override
-    public Flux<UUID> getAllAwaitingApprovalByUsername(String username) {
+    public Flux<ApprovalRequestDto> getAllAwaitingApprovalByUsername(String username) {
         return approvalRequestRepository.findAllByUsername(username)
-                .map(ApprovalRequestDto::new)
-                .map(ApprovalRequestDto::getFormId);
+                .map(ApprovalRequestDto::new);
     }
 
     // Utility method to handle acknowledgement of message receipt for all listener methods:

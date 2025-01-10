@@ -34,7 +34,7 @@ public class MessageController {
 
     // View Forms awaiting the User's approval:
     @GetMapping("/pending-my-approval")
-    public Flux<UUID> getAllAwaitingApprovalByUsername(@RequestHeader("username") String username) {
+    public Flux<ApprovalRequestDto> getAllAwaitingApprovalByUsername(@RequestHeader("username") String username) {
         return messageService.getAllAwaitingApprovalByUsername(username);
     }
 

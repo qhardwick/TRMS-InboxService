@@ -49,13 +49,13 @@ public class RabbitMqConfig {
         return rabbitTemplate;
     }
 
+    /* Manual Ack will be a work in progress for now
     // Configure the MessageListenerAdapter to inject into the container and tell it which methods to monitor:
     @Bean
     public  MessageListenerAdapter messageListenerAdapter(MessageServiceImpl messageService, MessageConverter messageConverter) {
         MessageListenerAdapter adapter = new MessageListenerAdapter(messageService);
         adapter.setMessageConverter(messageConverter);
         adapter.setDefaultListenerMethod("postApprovalRequestToInboxByUsername");
-
         return adapter;
     }
 
@@ -71,6 +71,7 @@ public class RabbitMqConfig {
 
         return container;
     }
+    */
 
     // Create the exchange:
     @Bean
