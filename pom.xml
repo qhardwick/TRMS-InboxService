@@ -59,6 +59,19 @@
             <artifactId>java-driver-core</artifactId>
         </dependency>
 
+        <!-- Kinesis data streams for pushing real-time updates -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>kinesis</artifactId>
+            <version>2.17.218</version>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.kinesis</groupId>
+            <artifactId>amazon-kinesis-client</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+
         <!-- AWS plugin for Cassandra authentication -->
         <dependency>
             <groupId>software.aws.mcs</groupId>
@@ -130,6 +143,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
+
+        <!-- Needed so that jackson knows how to convert LocalDateTime objects to JSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.15.0</version> <!-- Use the appropriate version for your project -->
+        </dependency>
+
 
         <!-- Core testing depencies for Spring -->
         <dependency>

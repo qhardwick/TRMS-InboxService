@@ -42,3 +42,10 @@ logging:
 # Configure Rabbit exchanges, queues, and routing keys:
 exchanges:
   direct: direct-exchange
+
+# Configure Kinesis data stream:
+kinesis:
+  consumer-name: myConsumer
+  stream-name: approval-requests
+  stream-arn: arn:aws:kinesis:us-east-2:873282635943:stream/approval-requests
+  consumer-arn: arn:aws:kinesis:us-east-2:873282635943:stream/approval-requests/consumer/myConsumer:1738013461

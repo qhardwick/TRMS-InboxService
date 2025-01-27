@@ -1,8 +1,10 @@
 package com.skillstorm.controllers;
 
 import com.skillstorm.dtos.ApprovalRequestDto;
+import com.skillstorm.services.KinesisService;
 import com.skillstorm.services.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -14,10 +16,12 @@ import java.util.UUID;
 public class MessageController {
 
     private final MessageService messageService;
+    private final KinesisService kinesisService;
 
     @Autowired
-    public MessageController(MessageService messageService) {
+    public MessageController(MessageService messageService, KinesisService kinesisService) {
         this.messageService = messageService;
+        this.kinesisService = kinesisService;
     }
 
     // Test endpoint:
@@ -30,12 +34,6 @@ public class MessageController {
     @GetMapping
     public Flux<ApprovalRequestDto> findAllMessages() {
         return messageService.findAll();
-    }
-
-    // View Forms awaiting the User's approval:
-    @GetMapping("/pending-my-approval")
-    public Flux<ApprovalRequestDto> getAllAwaitingApprovalByUsername(@RequestHeader("username") String username) {
-        return messageService.getAllAwaitingApprovalByUsername(username);
     }
 
     // Delete a message from inbox:
