@@ -15,7 +15,10 @@ public interface MessageService {
     Mono<ApprovalRequestDto> getMessageByUsernameAndFormId(String username, UUID formId);
 
     // Get all Forms awaiting a User's approval:
-    Flux<ApprovalRequestDto> getAllAwaitingApprovalByUsername(String username);
+    Flux<ApprovalRequestDto> getApprovalRequestsByUsername(String username);
+
+    // Check the cache to see if the user has any new messages. If so, load them into the corresponding sink:
+    Flux<ApprovalRequestDto> getApprovalRequestUpdates(String username);
 
     // Delete by Username and FormId:
     Mono<Void> deleteByUsernameAndFormId(ApprovalRequestDto approvalRequest);

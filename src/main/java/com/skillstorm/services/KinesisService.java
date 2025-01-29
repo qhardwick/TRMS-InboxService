@@ -1,13 +1,16 @@
 package com.skillstorm.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skillstorm.dtos.ApprovalRequestDto;
+import com.skillstorm.entities.ApprovalRequest;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
+import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.kinesis.KinesisAsyncClient;
 import software.amazon.awssdk.services.kinesis.model.*;
 
@@ -19,29 +22,40 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class KinesisService {
 
-    private final Flux<ApprovalRequestDto> updates;
     private final KinesisAsyncClient kinesisClient;
     private final String streamName;
-    private final String streamArn;
-    private final String consumerName;
-    private String consumerArn;
-
+    private final String consumerArn;
     private final ObjectMapper mapper;
 
     // Ensure we're only subscribed to each shard once:
     private final Map<String, CompletableFuture<Void>> shardSubscriptions = new ConcurrentHashMap<>();
 
     @Autowired
-    public KinesisService(KinesisAsyncClient kinesisClient, @Value("${kinesis.stream-name}") String streamName, @Value("${kinesis.stream-arn}") String streamArn,
-                          @Value("${kinesis.consumer-name}") String consumerName, @Value("${kinesis.consumer-arn}") String consumerArn, ObjectMapper mapper) {
+    public KinesisService(KinesisAsyncClient kinesisClient, @Value("${kinesis.stream-name}") String streamName, @Value("${kinesis.consumer-arn}") String consumerArn, ObjectMapper mapper) {
         this.kinesisClient = kinesisClient;
         this.streamName = streamName;
-        this.streamArn = streamArn;
-        this.consumerName = consumerName;
         this.consumerArn = consumerArn;
-        this.updates = Flux.create(this::subscribeToKinesisStream);
-
         this.mapper = mapper;
+    }
+
+    // Load data into the kinesis stream for consumption:
+    public void publishApprovalRequestToKinesis(ApprovalRequest approvalRequest) {
+        try {
+            System.out.println("\nPublishing new message to kinesis: " + approvalRequest.toString());
+            String jsonData = mapper.writeValueAsString(new ApprovalRequestDto(approvalRequest));
+
+            PutRecordRequest putRequest = PutRecordRequest.builder()
+                    .streamName(streamName)
+                    .partitionKey(approvalRequest.getUsername())
+                    .data(SdkBytes.fromUtf8String(jsonData))
+                    .build();
+
+            kinesisClient.putRecord(putRequest);
+
+        } catch ( JsonProcessingException e) {
+            System.err.println("Publish message failed: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void subscribeToKinesisStream(FluxSink<ApprovalRequestDto> sink) {
@@ -50,7 +64,9 @@ public class KinesisService {
             if (ex == null) {
                 System.out.println("\n\nSubscribing to stream");
                 listShardsResponse.shards().forEach(shard -> {
+                    System.out.println("\nIdentified shard: " + shard.toString());
                     if (!shardSubscriptions.containsKey(shard.shardId())) {
+                        System.out.println("\nAdding shard " + shard.shardId() + " to map");
                         shardSubscriptions.put(shard.shardId(), subscribeToShard(shard, sink));
                     }
                 });
@@ -73,9 +89,11 @@ public class KinesisService {
         SubscribeToShardResponseHandler responseHandler = SubscribeToShardResponseHandler.builder()
                 .onError(sink::error)
                 .subscriber(event -> {
+                    System.out.println("\nEvent received: " + event.toString());
                     if (event instanceof SubscribeToShardEvent) {
                         ((SubscribeToShardEvent) event).records().forEach(record -> {
                             try {
+                                System.out.println("\nRecord received: " + record.toString());
                                 String jsonData = new String(record.data().asByteArray(), StandardCharsets.UTF_8);
                                 ApprovalRequestDto dto = mapper.readValue(jsonData, ApprovalRequestDto.class);
                                 sink.next(dto);
