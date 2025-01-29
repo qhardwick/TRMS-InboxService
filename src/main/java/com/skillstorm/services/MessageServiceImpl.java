@@ -91,7 +91,8 @@ public class MessageServiceImpl implements MessageService {
 
     private void  publishApprovalRequestToKinesis(ApprovalRequest approvalRequest) {
         try {
-            String jsonData = mapper.writeValueAsString(approvalRequest);
+            System.out.println("\nPublishing new message to kinesis: " + approvalRequest.toString());
+            String jsonData = mapper.writeValueAsString(new ApprovalRequestDto(approvalRequest));
 
         PutRecordRequest putRequest = PutRecordRequest.builder()
                 .streamName(streamName)
@@ -102,6 +103,7 @@ public class MessageServiceImpl implements MessageService {
         kinesisClient.putRecord(putRequest);
 
         } catch ( JsonProcessingException e) {
+            System.err.println("Publish message failed: " + e.getMessage());
             e.printStackTrace();
         }
     }

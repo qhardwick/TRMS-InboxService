@@ -4,12 +4,9 @@ import com.skillstorm.dtos.ApprovalRequestDto;
 import com.skillstorm.services.KinesisService;
 import com.skillstorm.services.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/messages")
