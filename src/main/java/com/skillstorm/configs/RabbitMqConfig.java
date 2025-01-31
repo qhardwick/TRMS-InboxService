@@ -99,15 +99,29 @@ public class RabbitMqConfig {
         return new Queue(Queues.AUTO_APPROVAL.toString());
     }
 
+    // Internal queues for implementing SSEs:
+    @Bean
+    public Queue approvalRequestUpdatesQueue() {
+        return new Queue(Queues.APPROVAL_REQUEST_UPDATES.toString(), true);
+    }
+
 
     // Bind the queues to the exchange:
 
-    // Approval Request binding:
+    // Approval Request bindings:
     @Bean
     public Binding approvalRequestBinding(Queue approvalRequestQueue, Exchange directExchange) {
         return BindingBuilder.bind(approvalRequestQueue)
                 .to(directExchange)
                 .with(Queues.APPROVAL_REQUEST)
+                .noargs();
+    }
+
+    @Bean
+    public Binding approvalRequestUpdatesBinding(Queue approvalRequestUpdatesQueue, Exchange directExchange) {
+        return BindingBuilder.bind(approvalRequestUpdatesQueue)
+                .to(directExchange)
+                .with("user.*")
                 .noargs();
     }
 

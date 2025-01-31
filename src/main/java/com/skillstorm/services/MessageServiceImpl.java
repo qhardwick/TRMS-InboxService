@@ -7,6 +7,7 @@ import com.skillstorm.dtos.VerificationRequestDto;
 import com.skillstorm.entities.ApprovalRequest;
 import com.skillstorm.repositories.ApprovalRequestRepository;
 import com.skillstorm.repositories.VerificationRequestRepository;
+import com.skillstorm.utils.EventBus;
 import jakarta.annotation.PostConstruct;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -36,13 +37,17 @@ public class MessageServiceImpl implements MessageService {
     // Alternatively, utilize Kinesis data streams to publish real-time updates:
     private final KinesisService kinesisService;
 
+    // Event bus for more reactive sse emission but still not using kinesis:
+    private final EventBus eventBus;
+
     @Autowired
     public MessageServiceImpl(ApprovalRequestRepository approvalRequestRepository, VerificationRequestRepository verificationRequestRepository,
-                              RabbitTemplate rabbitTemplate, KinesisService kinesisService) {
+                              RabbitTemplate rabbitTemplate, KinesisService kinesisService, EventBus eventBus) {
         this.approvalRequestRepository = approvalRequestRepository;
         this.verificationRequestRepository = verificationRequestRepository;
         this.rabbitTemplate = rabbitTemplate;
         this.kinesisService = kinesisService;
+        this.eventBus = eventBus;
     }
 
     // Set up a scheduled task to run periodically to check for stale approval requests. We're just testing here, so we want the
@@ -68,6 +73,7 @@ public class MessageServiceImpl implements MessageService {
                 .map(ApprovalRequestDto::new)
                 //.doOnSuccess(kinesisService::publishApprovalRequestToKinesis)
                 .doOnSuccess(this::addRequestToCache)
+                .doOnSuccess(approvalRequestDto -> eventBus.publish(approvalRequest.getUsername(), approvalRequestDto))
                 .then();
     }
 
@@ -84,6 +90,21 @@ public class MessageServiceImpl implements MessageService {
         return approvalRequestRepository.findAllByUsername(username.toLowerCase())
                 .map(ApprovalRequestDto::new);
     }
+
+    /*
+    // Check cache for new messages. If so, emit them and then subscribe to the event bus to receive updates in real time:
+    @Override
+    public Flux<ApprovalRequestDto> getApprovalRequestUpdates(String username) {
+        Queue<ApprovalRequestDto> userMessages = approvalRequestsCache.get(username.toLowerCase());
+
+        if(userMessages != null && !userMessages.isEmpty()) {
+            return Flux.fromIterable(userMessages)
+                    .concatWith(eventBus.subscribe(username));
+        }
+
+        return eventBus.subscribe(username);
+    }
+*/
 
     // Check the cache to see if the user has any new messages. If so, emit them and remove them from the cache:
     @Override

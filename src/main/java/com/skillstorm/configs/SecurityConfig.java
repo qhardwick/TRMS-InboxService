@@ -14,7 +14,7 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .authorizeExchange()
-                .pathMatchers("/inboxes/**").permitAll()
+                .pathMatchers("/messages/**").permitAll()
                 .anyExchange().permitAll()
                 .and()
                 .csrf().disable()

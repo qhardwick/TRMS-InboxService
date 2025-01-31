@@ -8,7 +8,10 @@ public enum Queues {
     COMPLETION_VERIFICATION("completion-verification-queue"),
 
     // To Form-Service:
-    AUTO_APPROVAL("automatic-approval-queue");
+    AUTO_APPROVAL("automatic-approval-queue"),
+
+    // Internal queues for implementing SSEs:
+    APPROVAL_REQUEST_UPDATES("approval-request-updates-queue");
 
     private final String queue;
 
