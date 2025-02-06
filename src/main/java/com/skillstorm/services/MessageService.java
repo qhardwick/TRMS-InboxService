@@ -20,6 +20,9 @@ public interface MessageService {
     // Check the cache to see if the user has any new messages. If so, load them into the corresponding sink:
     Flux<ApprovalRequestDto> getApprovalRequestUpdates(String username);
 
+    // Update a message's viewed field to show that it has been read:
+    Mono<ApprovalRequestDto> markMessageAsViewed(String username, UUID formId);
+
     // Delete by Username and FormId:
     Mono<Void> deleteByUsernameAndFormId(ApprovalRequestDto approvalRequest);
 }

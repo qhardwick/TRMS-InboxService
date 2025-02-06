@@ -73,7 +73,7 @@ public class MessageServiceImpl implements MessageService {
                 .map(ApprovalRequestDto::new)
                 //.doOnSuccess(kinesisService::publishApprovalRequestToKinesis)
                 .doOnSuccess(this::addRequestToCache)
-                .doOnSuccess(approvalRequestDto -> eventBus.publish(approvalRequest.getUsername(), approvalRequestDto))
+                //.doOnSuccess(approvalRequestDto -> eventBus.publish(approvalRequest.getUsername(), approvalRequestDto))
                 .then();
     }
 
@@ -91,20 +91,18 @@ public class MessageServiceImpl implements MessageService {
                 .map(ApprovalRequestDto::new);
     }
 
-    /*
-    // Check cache for new messages. If so, emit them and then subscribe to the event bus to receive updates in real time:
-    @Override
-    public Flux<ApprovalRequestDto> getApprovalRequestUpdates(String username) {
-        Queue<ApprovalRequestDto> userMessages = approvalRequestsCache.get(username.toLowerCase());
-
-        if(userMessages != null && !userMessages.isEmpty()) {
-            return Flux.fromIterable(userMessages)
-                    .concatWith(eventBus.subscribe(username));
-        }
-
-        return eventBus.subscribe(username);
-    }
-*/
+//    // Check cache for new messages. If so, emit them and then subscribe to the event bus to receive updates in real time:
+//    @Override
+//    public Flux<ApprovalRequestDto> getApprovalRequestUpdates(String username) {
+//        Queue<ApprovalRequestDto> userMessages = approvalRequestsCache.get(username.toLowerCase());
+//
+//        if(userMessages != null && !userMessages.isEmpty()) {
+//            return Flux.fromIterable(userMessages)
+//                    .concatWith(eventBus.subscribe(username));
+//        }
+//
+//        return eventBus.subscribe(username);
+//    }
 
     // Check the cache to see if the user has any new messages. If so, emit them and remove them from the cache:
     @Override
@@ -124,6 +122,17 @@ public class MessageServiceImpl implements MessageService {
         });
     }
 
+    // Update a message's viewed field to show that it has been read:
+    @Override
+    public Mono<ApprovalRequestDto> markMessageAsViewed(String username, UUID formId) {
+        return approvalRequestRepository.findByUsernameAndFormId(username.toLowerCase(), formId)
+                .flatMap(approvalRequest ->  {
+                    approvalRequest.setViewed(true);
+                    return approvalRequestRepository.save(approvalRequest)
+                            .map(ApprovalRequestDto::new);
+                });
+    }
+
     // Return all db entries. Just for testing
     // TODO: Delete when no longer needed
     @Override
@@ -140,7 +149,8 @@ public class MessageServiceImpl implements MessageService {
 
     // Query the repository for all ApprovalRequests past their deadlines:
     public Flux<Void> checkForApprovalDeadlines() {
-        return approvalRequestRepository.findAllRequestsWithExpiredDeadlines(LocalDateTime.now())
+        return approvalRequestRepository
+                .findAllRequestsWithExpiredDeadlines(LocalDateTime.now())
                 .flatMap(this::submitForAutoApproval);
     }
 

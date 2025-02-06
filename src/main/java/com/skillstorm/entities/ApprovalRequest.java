@@ -7,6 +7,7 @@ import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -20,6 +21,11 @@ public class ApprovalRequest {
 
     @PrimaryKeyColumn(name = "form_id", ordinal = 1, type = PrimaryKeyType.CLUSTERED)
     private UUID formId;
+
+    private String requester;
+
+    @Column("event_date")
+    private LocalDate eventDate;
 
     @Column("time_created")
     private LocalDateTime timeCreated;

@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/messages")
 public class MessageController {
@@ -46,6 +48,12 @@ public class MessageController {
         return ResponseEntity.ok()
                         .header(HttpHeaders.CONNECTION, "keep-alive")
                         .body(messageService.getApprovalRequestUpdates(username));
+    }
+
+    // Mark message as read. May be refactored into a more general 'Edit Message' method, but I believe messages should be largely immutable:
+    @PutMapping("/{formId}")
+    public Mono<ApprovalRequestDto> markMessageAsViewed(@RequestHeader("username") String username, @PathVariable("formId") UUID formId) {
+        return messageService.markMessageAsViewed(username, formId);
     }
 
     // Delete a message from inbox:
