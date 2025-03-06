@@ -1,0 +1,15 @@
+
+AWS CLI command to create and register a consumer:
+aws kinesis register-stream-consumer \
+    --stream-arn arn:aws:kinesis:us-west-2:012345678912:stream/samplestream \
+    --consumer-name KinesisConsumerApplication
+
+Success response:
+{
+    "Consumer": {
+        "ConsumerName": "KinesisConsumerApplication",
+        "ConsumerARN": "arn:aws:kinesis:us-west-2: 123456789012:stream/samplestream/consumer/KinesisConsumerApplication:1572383852",
+        "ConsumerStatus": "CREATING",
+        "ConsumerCreationTimestamp": 1572383852.0
+    }
+}

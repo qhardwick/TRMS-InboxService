@@ -1,0 +1,51 @@
+
+# Configure Netty server:
+server:
+  port: 8082
+
+# Point to the Eureka discovery client to it knows where to register:
+eureka:
+  client:
+    service-url:
+      # Sets the url for the eureka server to the value of the EUREKA_URL env variable if
+      # it has been set, or to http://localhost:8761/eureka if it has not:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+
+  #Configure hearbeat interval:
+  instance:
+    leaseRenewalIntervalInSeconds: 30
+    hostname: ${AWS_HOSTNAME:localhost}
+
+# Assign a key to register with Discovery Service:
+spring:
+  application:
+    name: message-service
+
+
+  # Configure terminal output:
+  output:
+    ansi:
+      enabled: always
+
+# Configure logging levels:
+logging:
+  level:
+    org:
+      springframework: INFO
+    com:
+      datastax: ERROR
+    io:
+      netty: ERROR
+    reactor:
+      netty: ERROR
+
+# Configure Rabbit exchanges, queues, and routing keys:
+exchanges:
+  direct: direct-exchange
+
+# Configure Kinesis data stream:
+kinesis:
+  consumer-name: myConsumer
+  stream-name: approval-requests
+  stream-arn: arn:aws:kinesis:us-east-2:873282635943:stream/approval-requests
+  consumer-arn: arn:aws:kinesis:us-east-2:873282635943:stream/approval-requests/consumer/myConsumer:1738013461
